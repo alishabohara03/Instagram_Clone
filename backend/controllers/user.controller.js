@@ -355,59 +355,59 @@ export const logout = async (_, res) => {
     }
 }
 
-export const getprofile = async (res, req) => {
+export const getprofile = async (req, res) => {
     try {
         const userId = req.params.id;
-        let user = await User.findById(userId);
+        let user = await User.findById(userId).select('-password');
         return res.status(200).json({
             user,
-            sucess:true,
+            success:true,
         })
     } catch (error) {
-        
+        console.log(error);
+        return res.status(500).json({
+            message: "Server error",
+            success: false
+        });
     }
 }
 
 
-export const editProfile = async (req,res) => {
-          try {
-            const userId = req.id;
-            const {bio, gender} = req.body;
-            const profilePicture = req.file;
+export const editProfile = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { bio, gender } = req.body;
+        const profilePicture = req.file;
+        let cloudResponse;
 
-            let cloudResponse;
-            if(profilePicture) {
-                const fileUri = getDataUri(profilePicture);
-                 cloudResponse= await cloudinary.uploader.upload(fileUri);
+        if (profilePicture) {
+            const fileUri = getDataUri(profilePicture);
+            cloudResponse = await cloudinary.uploader.upload(fileUri);
+        }
 
-            }
-           const user = await User.findById(userId);
-           if(!user){
-            return res.status(401).json({
-                message:"user not found",
-                sucess: false
-            })
-           }
-            
-           if (bio) user.bio = bio;
+        const user = await User.findById(userId).select('-password');
+        if (!user) {
+            return res.status(404).json({
+                message: 'User not found.',
+                success: false
+            });
+        };
+        if (bio) user.bio = bio;
         if (gender) user.gender = gender;
         if (profilePicture) user.profilePicture = cloudResponse.secure_url;
 
-          await user.save();
+        await user.save();
 
-                  return res.status(200).json({
+        return res.status(200).json({
             message: 'Profile updated.',
             success: true,
             user
         });
 
-
-          } catch (error) {
-            console.log(error);
-
-            
-          }
-}
+    } catch (error) {
+        console.log(error);
+    }
+};
 
 export const getSuggestedUsers = async(req, res) =>{
      try {
