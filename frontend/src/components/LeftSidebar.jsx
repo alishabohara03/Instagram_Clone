@@ -15,28 +15,17 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import instaLogo from "../assets/instalogo.png"; 
+import { useDispatch, useSelector } from "react-redux";
+import store from "@/redux/store";
+import { setAuthUser } from "@/redux/authSlice";
 
-const SidebarItems = [
-  { icon: <Home />, text: "Home" },
-  { icon: <Search />, text: "Search" },
-  { icon: <TrendingUp />, text: "Explore" },
-  { icon: <MessageCircle />, text: "Messages" },
-  { icon: <Heart />, text: "Notifications" },
-  { icon: <PlusSquare />, text: "Create" },
-  {
-    icon: (
-      <Avatar className="w-6 h-6 rounded-full">
-        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-        <AvatarFallback>CN</AvatarFallback>
-      </Avatar>
-    ),
-    text: "Profile",
-  },
-  { icon: <LogOut />, text: "Logout" },
-];
+
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
+
+  const {user} = useSelector(store=>store.auth)
+  const dispatch = useDispatch();
   const API_URL = "http://localhost:8000"; 
 
   const logoutHandler = async (retryCount = 1) => {
@@ -45,6 +34,7 @@ const LeftSidebar = () => {
         withCredentials: true,
       });
       if (res.data.success) {
+        dispatch(setAuthUser(null))
         toast.success(res.data.message || "Logged out successfully");
         navigate("/login");
       } else {
@@ -78,6 +68,25 @@ const LeftSidebar = () => {
     }
   };
 
+  const SidebarItems = [
+  { icon: <Home />, text: "Home" },
+  { icon: <Search />, text: "Search" },
+  { icon: <TrendingUp />, text: "Explore" },
+  { icon: <MessageCircle />, text: "Messages" },
+  { icon: <Heart />, text: "Notifications" },
+  { icon: <PlusSquare />, text: "Create" },
+  {
+    icon: (
+      <Avatar className="w-6 h-6 rounded-full">
+        <AvatarImage src={user?.profilePicture} alt="@shadcn" />
+        <AvatarFallback>CN</AvatarFallback>
+      </Avatar>
+    ),
+    text: "Profile",
+  },
+  { icon: <LogOut />, text: "Logout" },
+];
+
   return (
     <div className="fixed top-0 left-0 z-10 px-4 border-r border-gray-300 w-[16%] h-screen">
       <div className="flex flex-col">
@@ -102,3 +111,5 @@ const LeftSidebar = () => {
 };
 
 export default LeftSidebar;
+
+
